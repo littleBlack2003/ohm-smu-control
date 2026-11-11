@@ -1,7 +1,7 @@
 """界面文案（中文 / English）。键 -> (中文, English)。"""
 
 TEXT = {
-    "app_name": ("Ohm SMU Neo 上位机", "Ohm SMU Neo Control"),
+    "app_name": ("Ohm SMU V1 上位机", "Ohm SMU V1 Control"),
     "language": ("语言 / Language", "语言 / Language"),
     # 连接
     "conn": ("连接", "Connection"),

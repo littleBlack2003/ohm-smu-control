@@ -1,5 +1,5 @@
 @echo off
-rem Build Ohm SMU Neo host app as a single-file exe: dist/OhmSMU.exe
+rem Build Ohm SMU V1 host app as a single-file exe: dist/OhmSMU.exe
 rem Requires: python -m pip install -r requirements.txt
 cd /d "%~dp0"
 python -m PyInstaller --noconfirm --clean --onefile --windowed ^

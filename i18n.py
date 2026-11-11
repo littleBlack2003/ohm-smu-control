@@ -61,6 +61,9 @@ TEXT = {
                 "Rs 含二极管动态电阻，是上限估计。",
                 "After changing irradiance or area, click Recalculate; no need to re-measure. Rs and Rsh use the slope "
                 "method (Rs at Voc, Rsh over 0 to 0.25·Voc); Rs includes the diode's dynamic resistance, so it is an upper bound."),
+    "pv_zoom": ("只看发电区", "Zoom to power quadrant"),
+    "pv_use_i": ("纵轴用电流 I", "Plot current I"),
+    "y_i_ma": ("电流 I (mA)", "Current I (mA)"),
     "pv_param": ("参数", "Parameter"),
     "pv_fw": ("正扫", "Forward"),
     "pv_rv": ("反扫", "Reverse"),

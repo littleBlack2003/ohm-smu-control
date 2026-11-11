@@ -320,6 +320,8 @@ class App(tk.Tk):
         self.pv_delay = tk.IntVar(value=s.get("pv_delay", 20))
         self.pv_dual = tk.BooleanVar(value=s.get("pv_dual", True))
         self.pv_off = tk.BooleanVar(value=s.get("pv_off", True))
+        self.pv_zoom = tk.BooleanVar(value=s.get("pv_zoom", False))
+        self.pv_use_i = tk.BooleanVar(value=s.get("pv_use_i", False))
         self._param_row(tab, [("pv_pin", self.pv_pin, 7), ("pv_area", self.pv_area, 7),
                               ("start_v", self.pv_start, 7), ("stop_v", self.pv_stop, 7),
                               ("points", self.pv_points, 5), ("settle_ms", self.pv_delay, 5)])
@@ -335,6 +337,11 @@ class App(tk.Tk):
         self._t(ttk.Button(bar, command=self.export_pv), "export").pack(side="left", padx=4)
         self.pv_prog = ttk.Progressbar(bar, length=110)
         self.pv_prog.pack(side="right")
+        view = ttk.Frame(tab)
+        view.pack(fill="x", pady=(0, 4))
+        self._t(ttk.Checkbutton(view, variable=self.pv_zoom, command=self._render_pv), "pv_zoom").pack(side="left")
+        self._t(ttk.Checkbutton(view, variable=self.pv_use_i, command=self._render_pv), "pv_use_i").pack(
+            side="left", padx=10)
 
         self._t(ttk.Label(tab, foreground="#777", wraplength=900, justify="left"), "pv_note").pack(
             side="bottom", fill="x", pady=(6, 0))
@@ -898,18 +905,22 @@ class App(tk.Tk):
         ax.grid(True, alpha=0.3)
         ax.axhline(0, color="#888", lw=0.8)
         ax.axvline(0, color="#888", lw=0.8)
+        use_i = self.pv_use_i.get()
         ax.set_xlabel(self.tr("x_cell_v"))
-        ax.set_ylabel(self.tr("y_j"))
+        ax.set_ylabel(self.tr("y_i_ma" if use_i else "y_j"))
         if res:
             for r in res:
                 st = PV_FW_STYLE if r["forward"] else PV_RV_STYLE
-                ax.plot(r["x"], r["j"], "-", lw=1, ms=4, color=st["color"], marker=st["marker"],
+                y = r["i_ma"] if use_i else r["j"]
+                ax.plot(r["x"], y, "-", lw=1, ms=4, color=st["color"], marker=st["marker"],
                         label=self.tr("pv_fw" if r["forward"] else "pv_rv"))
-                ax.plot([r["vmp"]], [r["jmp"]], "*", ms=13, color=st["color"], mec="black", mew=0.8)
-            jmax = max(r["jsc"] for r in res)
-            vmax = max(r["voc"] for r in res)
-            ax.set_ylim(-0.3 * jmax, 1.2 * jmax)
-            ax.set_xlim(min(min(r["x"].min() for r in res), 0) - 0.02 * vmax, 1.15 * vmax)
+                ymp = r["imp"] * 1e3 if use_i else r["jmp"]
+                ax.plot([r["vmp"]], [ymp], "*", ms=13, color=st["color"], mec="black", mew=0.8)
+            if self.pv_zoom.get():  # 只看发电区：第四象限（按光电流为正）附近
+                ysc = max(r["isc"] * 1e3 if use_i else r["jsc"] for r in res)
+                vmax = max(r["voc"] for r in res)
+                ax.set_ylim(-0.3 * ysc, 1.2 * ysc)
+                ax.set_xlim(min(min(r["x"].min() for r in res), 0) - 0.02 * vmax, 1.15 * vmax)
             ax.plot([], [], "*", ms=11, color="#555", mec="black", label=self.tr("pv_mpp"))
             ax.legend(loc="lower left", fontsize=9)
         elif self.pv_rows:
@@ -918,10 +929,10 @@ class App(tk.Tk):
                 area = self._get(self.pv_area, "pv_area")
             except ValueError:
                 area = 0
-            if area > 0:
+            if use_i or area > 0:
                 vm = [r[1] for r in self.pv_rows]
-                j = [-r[2] * 1e3 / area for r in self.pv_rows]
-                ax.plot(vm, j, ".-", lw=1, ms=3, color="#555")
+                y = [-r[2] * 1e3 / (1 if use_i else area) for r in self.pv_rows]
+                ax.plot(vm, y, ".-", lw=1, ms=3, color="#555")
         self.pv_canvas.draw_idle()
 
     def export_pv(self):
@@ -975,7 +986,8 @@ class App(tk.Tk):
                 "mo_v": self.mo_v, "mo_interval": self.mo_interval, "mo_duration": self.mo_duration,
                 "pv_pin": self.pv_pin, "pv_area": self.pv_area, "pv_start": self.pv_start,
                 "pv_stop": self.pv_stop, "pv_points": self.pv_points, "pv_delay": self.pv_delay,
-                "pv_dual": self.pv_dual, "pv_off": self.pv_off}
+                "pv_dual": self.pv_dual, "pv_off": self.pv_off, "pv_zoom": self.pv_zoom,
+                "pv_use_i": self.pv_use_i}
         for k, var in keys.items():
             try:
                 self.settings[k] = var.get()

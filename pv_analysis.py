@@ -128,6 +128,7 @@ def analyze(v, i, area_cm2, pin_mw_cm2):
         "rsh_area": rsh * area_cm2,
         "x": x,                                # 电池电压 V（按极性换算后）
         "j": y * 1e3 / area_cm2,               # 光电流密度 mA/cm²（发电为正）
+        "i_ma": y * 1e3,                       # 光电流 mA（发电为正）
         "forward": None,                       # 以下两项由 analyze_sweep 填写：是否正扫、原始数据的下标区间
         "seg": None,
     }

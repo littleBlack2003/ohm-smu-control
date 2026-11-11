@@ -30,6 +30,7 @@
   - Rs、Rsh 用斜率法：Rs = −dV/dI 在 Voc 处，Rsh = −dV/dI 在 0 ~ 0.25·Voc 段。斜率法的 Rs 包含二极管在 Voc 处的动态电阻，是上限估计；Rsh 很大时对电流噪声敏感，可增加点数或 OSR。
 - **光强和面积**由用户输入，软件不测光强。改动后点“重新计算”即可，不必重测。
 - **限流**：左侧“限流”要大于 Isc（面积 × Jsc）。读数达到限流时日志会警告 Jsc 可能被截断。源表最大 40 mA，例如 Jsc 25 mA/cm² 时面积不宜超过约 1.5 cm²。
+- **曲线显示**：测完默认显示整条扫描曲线（全部电压和电流范围）。勾选“只看发电区”放大到 0 ~ Voc 段；勾选“纵轴用电流 I”把纵轴从电流密度 J (mA/cm²) 换成电流 I (mA)。
 - “分析 I-V 扫描最新曲线”可直接分析 I-V 扫描页最后一条曲线。导出 CSV 包含测试条件、参数表和原始数据。
 
 ### 安全与固件规避
@@ -112,6 +113,7 @@ Windows control software for the uSMU v10 firmware command set. Single-file exe;
   - Rs and Rsh use the slope method: Rs = −dV/dI at Voc, Rsh = −dV/dI over 0 to 0.25·Voc. The slope-method Rs includes the diode's dynamic resistance at Voc, so it is an upper bound; a large Rsh is sensitive to current noise — use more points or a higher OSR.
 - **Irradiance and area** are user inputs; the software does not measure light. After changing them, click "Recalculate" — no need to re-measure.
 - **Current limit**: set it above Isc (area × Jsc). If readings reach the limit, the log warns that Jsc may be clipped. The SMU's maximum is 40 mA, so at 25 mA/cm² keep the area below about 1.5 cm².
+- **Plot view**: after a test the whole sweep is shown (full voltage and current range). Tick "Zoom to power quadrant" to zoom to 0 to Voc; tick "Plot current I" to plot current I (mA) instead of current density J (mA/cm²).
 - "Analyse latest I-V sweep" analyses the last curve from the I-V Sweep tab. The CSV export contains the conditions, the parameter table and the raw data.
 
 ### Safety and firmware workarounds

@@ -9,6 +9,7 @@ import threading
 import time
 import tkinter as tk
 from datetime import datetime
+from types import SimpleNamespace
 from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
@@ -65,8 +66,12 @@ class App(tk.Tk):
         self.settings = self._load_settings()
         self.lang = self.settings.get("lang") or i18n.detect_language()
         sd.lang = self.lang
-        self.geometry("1280x800")
-        self.minsize(1100, 700)
+        # 窗口尺寸按屏幕缩放放大（150% 缩放时 1280x800 只够放下控件），且不超过屏幕
+        k = self.winfo_fpixels("1i") / 96
+        w = min(int(1280 * k), self.winfo_screenwidth() - 40)
+        h = min(int(800 * k), self.winfo_screenheight() - 80)
+        self.geometry(f"{w}x{h}")
+        self.minsize(min(int(1100 * k), w), min(int(700 * k), h))
         try:
             self.iconbitmap(resource_path("ohm_smu.ico"))
         except tk.TclError:
@@ -144,6 +149,9 @@ class App(tk.Tk):
         if "vista" in style.theme_names():
             style.theme_use("vista")
         style.configure("Big.TLabel", font=("Consolas", 20, "bold"))
+        # Treeview 行高默认按像素，高缩放屏幕上会挤在一起
+        line = int(self.tk.call("font", "metrics", "TkDefaultFont", "-linespace"))
+        style.configure("Treeview", rowheight=int(line * 1.3))
         style.configure("On.TLabel", foreground="#1a7f37", font=("Microsoft YaHei", 10, "bold"))
         style.configure("Off.TLabel", foreground="#888888", font=("Microsoft YaHei", 10, "bold"))
 
@@ -258,8 +266,23 @@ class App(tk.Tk):
         tb_frame = ttk.Frame(parent)
         tb_frame.pack(fill="x")
         NavigationToolbar2Tk(canvas, tb_frame).update()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+        widget = canvas.get_tk_widget()
+        widget.pack(fill="both", expand=True)
+        # matplotlib 在 <Map> 时按屏幕缩放（如 150%）改 figure 的 dpi；之后若没有 Configure 事件，
+        # figure 会比控件大，只显示左上角。显示时再按控件实际大小对齐一次。
+        widget.bind("<Map>", lambda e, c=canvas: self.after_idle(lambda: self._fit_canvas(c)), add="+")
         return fig, ax, canvas
+
+    @staticmethod
+    def _fit_canvas(canvas):
+        """让 figure 的像素尺寸与控件实际尺寸一致。"""
+        w = canvas.get_tk_widget()
+        width, height = w.winfo_width(), w.winfo_height()
+        if width < 2 or height < 2:  # 尚未显示
+            return
+        fw, fh = canvas.get_width_height(physical=True)
+        if abs(fw - width) > 1 or abs(fh - height) > 1:
+            canvas.resize(SimpleNamespace(width=width, height=height))
 
     def _build_sweep_tab(self, nb):
         s = self.settings
@@ -343,18 +366,21 @@ class App(tk.Tk):
         self._t(ttk.Checkbutton(view, variable=self.pv_use_i, command=self._render_pv), "pv_use_i").pack(
             side="left", padx=10)
 
-        self._t(ttk.Label(tab, foreground="#777", wraplength=900, justify="left"), "pv_note").pack(
+        self._t(ttk.Label(tab, foreground="#777", wraplength=int(900 * self.winfo_fpixels("1i") / 96),
+                          justify="left"), "pv_note").pack(
             side="bottom", fill="x", pady=(6, 0))
         body = ttk.Frame(tab)
         body.pack(fill="both", expand=True)
         side = ttk.Frame(body)
         side.pack(side="right", fill="y", padx=(8, 0))
         self.pv_tree = ttk.Treeview(side, columns=("p", "a", "b"), show="headings", height=16)
-        for c, w in (("p", 150), ("a", 95), ("b", 95)):
-            self.pv_tree.column(c, width=w, anchor="w" if c == "p" else "e", stretch=False)
+        k = self.winfo_fpixels("1i") / 96  # Treeview 列宽按像素给，需随屏幕缩放
+        for c, w in (("p", 150), ("a", 100), ("b", 100)):
+            self.pv_tree.column(c, width=int(w * k), anchor="w" if c == "p" else "e", stretch=False)
         self.pv_tree.pack(fill="y", expand=True)
         self.pv_err_var = tk.StringVar()
-        ttk.Label(side, textvariable=self.pv_err_var, foreground="#c62828", wraplength=330).pack(fill="x")
+        ttk.Label(side, textvariable=self.pv_err_var, foreground="#c62828",
+                  wraplength=int(340 * k)).pack(fill="x")
         plot = ttk.Frame(body)
         plot.pack(side="left", fill="both", expand=True)
         self.pv_fig, self.pv_ax, self.pv_canvas = self._make_plot(plot)
@@ -649,6 +675,7 @@ class App(tk.Tk):
 
     @staticmethod
     def _rescale(ax, canvas):
+        App._fit_canvas(canvas)
         ax.relim()
         ax.autoscale_view()
         canvas.draw_idle()
@@ -933,6 +960,7 @@ class App(tk.Tk):
                 vm = [r[1] for r in self.pv_rows]
                 y = [-r[2] * 1e3 / (1 if use_i else area) for r in self.pv_rows]
                 ax.plot(vm, y, ".-", lw=1, ms=3, color="#555")
+        self._fit_canvas(self.pv_canvas)
         self.pv_canvas.draw_idle()
 
     def export_pv(self):

@@ -23,7 +23,7 @@ import i18n
 import pv_analysis as pva
 import smu_device as sd
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 PV_FW_STYLE = {"color": "#D47F00", "marker": "o"}  # 正扫：橙色圆点
 PV_RV_STYLE = {"color": "#2F6DB5", "marker": "s"}  # 反扫：蓝色方块
 SETTINGS_PATH = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "OhmSMU", "settings.json")

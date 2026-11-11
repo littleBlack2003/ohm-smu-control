@@ -78,6 +78,7 @@ build.bat
 
 | 版本 | 日期 | 内容 |
 |---|---|---|
+| 1.2.2 | 2026-11-11 | 修复高分辨率屏幕（如 150% 缩放）上曲线只显示左上角、结果表被截断的问题；默认窗口尺寸随屏幕缩放 |
 | 1.2.1 | 2026-11-11 | 光伏测试测完默认显示整条曲线；新增“只看发电区”“纵轴用电流 I”选项 |
 | 1.2.0 | 2026-11-07 | 新增光伏测试页和 SIM-PV 模拟器 |
 | 1.1.0 | 2026-10-29 | 中英双语界面、I-V 扫描、定时监测 |
@@ -162,6 +163,7 @@ During development, run `python ohm_smu_app.py` directly.
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.2.2 | 2026-11-11 | Fix the plot showing only its top-left part and the results table being cut off on high-DPI screens (e.g. 150% scaling); the default window size follows display scaling |
 | 1.2.1 | 2026-11-11 | PV tab shows the full curve after a test; new "Zoom to power quadrant" and "Plot current I" options |
 | 1.2.0 | 2026-11-07 | PV test tab and SIM-PV simulator |
 | 1.1.0 | 2026-10-29 | Bilingual UI, I-V sweep, time monitor |
